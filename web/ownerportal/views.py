@@ -15,7 +15,7 @@ import datetime
 from devices.models import Device, Remote
 from vehicles.models import Vehicle
 
-INVALID_CREDENTIALS_ERROR = "Your username and/or password were incorrect."
+INVALID_CREDENTIAL_ERROR = "Your username and/or password were incorrect."
 NONOWNER_ACCOUNT_ERROR = "You must be a vehicle owner to log in."
 INACTIVE_ACCOUNT_ERROR = "Your account is not active, please contact the site admin."
 
@@ -43,7 +43,7 @@ def login_user(request):
             else:
                 state = INACTIVE_ACCOUNT_ERROR
         else:
-            state = INVALID_CREDENTIALS_ERROR
+            state = INVALID_CREDENTIAL_ERROR
 
     return render(request, 'rvi/login.html', {
         'state': state,

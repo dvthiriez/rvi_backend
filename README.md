@@ -212,6 +212,10 @@ the MySQL shell typically as *root* user.
 
         mysql> grant all on rvi.* to 'rvi_user'@'localhost';
 
+9. Grant User All Rights to Test Database
+
+   	mysql> grant all on test_rvi.* to 'rvi_user'@'localhost';
+
 
 ### Django Installation
 
