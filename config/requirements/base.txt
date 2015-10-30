@@ -31,3 +31,6 @@ pyasn1==0.1.8
 
 # basic log in token functionality used for mobile app log in
 django-tokenapi==0.2.3
+
+# testing requirements
+selenium==2.48.0
