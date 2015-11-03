@@ -31,7 +31,6 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).absolute().ancestor(3)
 MEDIA_ROOT = BASE_DIR.child('media')
 WEB_DIR = BASE_DIR.child('web')
-# STATIC_ROOT = WEB_DIR.child("staticroot")
 CONFIG_DIR = BASE_DIR.child('config')
 TEMPLATE_DIRS = [WEB_DIR.child('templates')]
 
@@ -147,7 +146,6 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            # 'filename': os.path.join(BASE_DIR, 'log/rvibackend.log'),
             'filename': BASE_DIR.child('log', 'rvibackend.log'),
             'formatter': 'verbose',
         },
@@ -207,12 +205,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 STATICFILES_DIRS = (
-    # os.path.join(WEB_DIR, 'static'),
     WEB_DIR.child('static'),
 )
-# STATIC_ROOT = os.path.join(WEB_DIR, 'staticroot')
-STATIC_ROOT = WEB_DIR.child('staticroot')
 STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR.parent('static')
 
 
 # Email configuration
@@ -232,7 +228,6 @@ BOOTSTRAP3 = {
 
 
 # Server Key File
-# RVI_BACKEND_KEYFILE = os.path.join(BASE_DIR, 'keys/rvi_be.private.pem')
 RVI_BACKEND_KEYFILE = BASE_DIR.child("keys", "insecure_root_key_priv.pem")
 
 # Server Signature Algorithm (default: RS256)
@@ -242,9 +237,7 @@ RVI_BACKEND_ALG_SIG = 'RS256'
 # File upload base path
 # You can use the relative path when running the rviserver in the foreground.
 # For running as a daemon you must use an absolute path.
-# MEDIA_ROOT = os.path.join(BASE_DIR, 'files')
 MEDIA_ROOT = BASE_DIR.child("files")
-# MEDIA_ROOT = '/absolute/path/to/files/'
 
 MEDIA_URL = '/files/'
 
