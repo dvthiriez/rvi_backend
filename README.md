@@ -145,9 +145,6 @@ Ubuntu:
 
     sudo apt-get install python-mysqldb
 
-Alternatively, the following python module can be installed via Python pip:
-
-    sudo pip install MySQL-python
 
 ### Database Server Startup
 
@@ -272,7 +269,7 @@ to the optional step after cloning the RVI Backend Repository from GitHub.
    The Cryptography library requires the libffi development library as well as
    the libssl development library. The names of the packages to be installed
    are libffi-devel and libssl-devel on Fedora and OpenSUSE; libffi-dev and 
-   libssl-devel on Debian and Ubuntu. Install them first, then install
+   libssl-dev on Debian and Ubuntu. Install them first, then install
 
         sudo pip install cryptography
 
@@ -321,7 +318,7 @@ to the optional step after cloning the RVI Backend Repository from GitHub.
         
    *Optional*, to install all required Python packages using one command, run 
    
-        pip install -r rvibackend/config/requirements/base.txt
+        pip install -r rvibackend/config/requirements/local.txt
     
 2. Set PYTHONPATH
 
@@ -347,7 +344,8 @@ to the optional step after cloning the RVI Backend Repository from GitHub.
     This will access the MariaDB database server. If you set the database up according
     to the above instructions this will work right out of the box. If you did change
     user name and/or password when setting up the database then you will need to modify
-    the file *rvibackend/config/settings/base.py* accordingly. You may also need to restart the database server. Ubuntu users would type *sudo service mysql restart* in the terminal.
+    the file *rvibackend/config/settings/base.py* accordingly. You may also need to restart 
+    the database server. Ubuntu users would type *sudo service mysql restart* in the terminal.
 
 4. Create the Admin User for the RVI Backend
 

@@ -56,24 +56,24 @@ $ fab deploy:host=ubuntu@staging.my-domain.com
 
 Then connect to the remote server and update the Ngninx config
 ```
-  ubuntu@server:$ cd ~/sites/staging.my-domain.com/source
+ubuntu@server:$ cd ~/sites/staging.my-domain.com/source
 ```
 ```
-  ubuntu@server:$ sed "s/SITENAME/staging.my-domain.com/g" \
-  		   deploy_tools/nginx.template.conf | sudo tee \
-		   /etc/nginx/sites-available/staging.my-domain.com
+ubuntu@server:$ sed "s/SITENAME/staging.my-domain.com/g" \
+		deploy_tools/nginx.template.conf | sudo tee \
+		/etc/nginx/sites-available/staging.my-domain.com
 ```
 ```
-  ubuntu@server:$ sudo ln -s ../sites-available/staging.my-domain.com \
-  		  /etc/nginx/sites-enabled/staging.my-domain.com
+ubuntu@server:$ sudo ln -s ../sites-available/staging.my-domain.com \
+		/etc/nginx/sites-enabled/staging.my-domain.com
 ```
 
 ... and the Upstart job
 
  ```
-  ubuntu@server: sed "s/SITENAME/staging.my-domain.com/g" \
-  		 deploy_tools/gunicorn-upstart.template.conf | sudo tee \
-		 /etc/init/gunicorn-staging.my-domain.com.conf
+ubuntu@server: sed "s/SITENAME/staging.my-domain.com/g" \
+	       deploy_tools/gunicorn-upstart.template.conf | sudo tee \
+	       /etc/init/gunicorn-staging.my-domain.com.conf
 ```
 
 After setting up the Nginx and Upstart scripts, restart their respective services
