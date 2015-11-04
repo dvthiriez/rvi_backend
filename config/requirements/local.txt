@@ -5,4 +5,4 @@
 # Maintainer: Rudolf Streif (rstreif@jaguarlandrover.com)
 # Author: David Thiriez (david.thiriez@p3-group.com)
 
-- base.txt # includes the base.txt requirements file
+-r base.txt # includes the base.txt requirements file

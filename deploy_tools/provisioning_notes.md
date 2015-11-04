@@ -20,6 +20,7 @@ eg, on Ubuntu:
     sudo apt-get update
     sudo apt-get install build-essential python-pip python-dev mysql-server python-mysqldb
     sudo apt-get install libffi-dev libssl-dev libmysqlclient-dev nginx erlang git
+    sudo update-rc.d mysql defaults
     sudo pip install virtualenv
 
 ## Nginx Virtual Host config

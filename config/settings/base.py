@@ -208,7 +208,7 @@ STATICFILES_DIRS = (
     WEB_DIR.child('static'),
 )
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR.parent('static')
+STATIC_ROOT = BASE_DIR.parent.child('static')
 
 
 # Email configuration

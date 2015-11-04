@@ -5,6 +5,8 @@ import random
 
 BACKEND_REPO_URL = 'https://github.com/dvthiriez/rvi_backend.git'
 CORE_REPO_URL = 'https://github.com/dvthiriez/rvi_core.git'
+MYSQL_PW = 'newpwd'
+
 
 def deploy():
     backend_site_folder = '/home/%s/sites/%s' % (env.user, env.host)
@@ -22,7 +24,7 @@ def deploy():
  
 
 def _create_directory_structure_if_necessary(backend_site_folder):
-    for subfolder in ('database', 'static', 'virtualenv', 'source'):
+    for subfolder in ('static', 'virtualenv', 'source'):
         run('mkdir -p %s/%s' % (backend_site_folder, subfolder))
 
 
@@ -66,6 +68,21 @@ def _update_static_files(backend_source_folder):
 
 
 def _update_database(backend_source_folder):
+    run('mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -p%s -u root mysql' % (
+        mysql_command,
+    ))
+
+    mysql_command = 'mysql -p%s -u root -e' % (MYSQL_PW,))
+    run('%s "drop user \'\'@\'localhost\';"' % (mysql_command,))
+    run('%s "drop user \'\'@\'hostname\';"' % (mysql_command,))
+    run('%s "drop database test;"' % (mysql_command,))
+    run('%s "create databse rvi character set utf8;"' % (mysql_command,))
+    run('%s "create user \'rvi_user\'@\'localhost\' identified by \'rvi\';"' % (
+        mysql_command,
+    ))
+    run('%s "grant all on rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
+    run('%s "grant all on test_rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
+
     run('cd %s/web && ../../virtualenv/bin/python2.7 manage.py migrate --noinput' % (
         backend_source_folder,
     ))
