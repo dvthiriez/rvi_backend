@@ -20,8 +20,20 @@ from vehicles.models import Vehicle
 from devices.models import Device, Remote
 
 
-class RviModelSetup():
-    def setup_user(self, username, password):
+DEFAULT_PASSWORD = 'rvi'
+RVI_BASENAME = 'jlr.com'
+
+
+class RVIModelSetup():
+
+    def __init__(self):
+        self.password = DEFAULT_PASSWORD
+        self.valid_from = datetime.now()
+        self.valid_to = self.valid_from.replace(self.valid_from.year + 1)
+        self.rvi_basename = RVI_BASENAME
+
+    def setup_user(self, username, password=None):
+        password = password or self.password
         user = User.objects.create_user(
             username=username,
             password=password
@@ -29,7 +41,7 @@ class RviModelSetup():
         user.save()
         return user
 
-    def setup_key(self, user):
+    def setup_key(self, user, valid_from=None, valid_to=None):
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,
@@ -41,9 +53,9 @@ class RviModelSetup():
             format=serialization.PublicFormat.SubjectPublicKeyInfo
         )
 
-        valid_from = datetime.now()
-        valid_to = valid_from.replace(valid_from.year + 1)
-        
+        valid_from = valid_from or self.valid_from
+        valid_to = valid_to or self.valid_to
+
         key = JSONWebKey.objects.create(
             key_name='key_' + user.username,
             key_valid_from=valid_from,
@@ -61,7 +73,7 @@ class RviModelSetup():
             veh_name='vehicle_test' + vehicle_vin,
             veh_vin = vehicle_vin,
             veh_key=owner_key,
-            veh_rvibasename='jlr.com',
+            veh_rvibasename=self.rvi_basename,
             account=owner
         )
         vehicle.save()
@@ -74,7 +86,7 @@ class RviModelSetup():
             dev_owner=user.username,
             dev_uuid=str(uuid.uuid4()),
             dev_key=user_key,
-            dev_rvibasename='jlr.com',
+            dev_rvibasename=self.rvi_basename,
             account=user
         )
         device.save()
