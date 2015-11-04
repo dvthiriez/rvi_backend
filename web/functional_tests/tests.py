@@ -1,5 +1,6 @@
 from unittest import skip
 from .base import FunctionalTest
+from common.util.rvi_setup import RviModelSetup
 
 
 ## TODO complete test on desktop environment for web browser support
@@ -37,14 +38,15 @@ class WebPortalTest(FunctionalTest):
 class RviTest(FunctionalTest):
     
     def test_data_setup(self):
-        owner = self.setup_user(username='dthiriez',password='rvi')
-        owner_key = self.setup_key(owner)
-        vehicle = self.setup_vehicle(owner, owner_key)
+        rvi_model = RviModelSetup()
+        owner = rvi_model.setup_user(username='dthiriez',password='rvi')
+        owner_key = rvi_model.setup_key(owner)
+        vehicle = rvi_model.setup_vehicle(owner, owner_key)
 
-        guest = self.setup_user(username='arodriguez',password='rvi')
-        guest_key = self.setup_key(guest)
-        guest_device = self.setup_device(guest, guest_key)
-        guest_remote = self.setup_remote(guest, guest_device, vehicle)
+        guest = rvi_model.setup_user(username='arodriguez',password='rvi')
+        guest_key = rvi_model.setup_key(guest)
+        guest_device = rvi_model.setup_device(guest, guest_key)
+        guest_remote = rvi_model.setup_remote(guest, guest_device, vehicle)
 
     def test_can_send_remote(self):
         # David proceeds to set up an account, security key, device, and 
