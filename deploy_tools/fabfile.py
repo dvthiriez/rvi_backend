@@ -1,5 +1,6 @@
 from fabric.contrib.files import append, exists, sed
-from fabric.api import env, local, run
+from fabric.api import env, local, run, warn_only
+from fabric.context_managers import shell_env
 import random
 
 
@@ -19,8 +20,9 @@ def deploy():
     _get_latest_source(core_site_folder, CORE_REPO_URL)
     _update_settings(backend_source_folder, env.host)
     _update_virtualenv(backend_source_folder)
-    _update_static_files(backend_source_folder)
-    _update_database(backend_source_folder)
+    with shell_env(PYTHONPATH=backend_source_folder):
+        _update_static_files(backend_source_folder)
+        _update_database(backend_source_folder)
  
 
 def _create_directory_structure_if_necessary(backend_site_folder):
@@ -33,8 +35,10 @@ def _get_latest_source(source_folder, repo_url):
         run('cd %s && git fetch' % (source_folder,))
     else:
         run('git clone %s %s' % (repo_url, source_folder))
-    current_commit = local("git log -n 1 --format=%H", capture=True)
-    run('cd %s && git reset --hard %s' % (source_folder, current_commit))
+    # TODO code below is only applicable to rvi_backend, needs to also accomodate
+    # rvi_core
+    # current_commit = local("git log -n 1 --format=%H", capture=True)
+    # run('cd %s && git reset --hard %s' % (source_folder, current_commit))
 
 
 def _update_settings(backend_source_folder, site_name):
@@ -44,16 +48,17 @@ def _update_settings(backend_source_folder, site_name):
         'ALLOWED_HOSTS =.+$',
         'ALLOWED_HOSTS = ["%s"]' % (site_name,)
     )
-    secret_key_file = backend_source_folder + '/config/settings/secret_key.py'
-    if not exists(secret_key_file):
-        chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%&^*(-_=+)'
-        key = ''.join(random.SystemRandom().choice(chars) for _ in range(50))
-        append(secret_key_file, "SECRET_KEY = '%s'" % (key,))
-    append(settings_path, '\nfrom .secret_key import SECRET_KEY')
+    secret_key_file = backend_source_folder + '/config/settings/secrets.json'
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%&^*(-_=+)'
+    key = ''.join(random.SystemRandom().choice(chars) for _ in range(50))
+    sed(secret_key_file,
+        '"DJANGO_SECRET_KEY": "y7pg3qz\)6fs4vk4=\)_*fn\(dagsx+t!wvl=p&d3ybm\(yc%\(\(&pg",',
+        '"DJANGO_SECRET_KEY": "%s",' % (key,)
+    )
 
 
 def _update_virtualenv(backend_source_folder):
-    virtualenv_folder = backend_source_folder + '/../../virtualenv'
+    virtualenv_folder = backend_source_folder + '/../virtualenv'
     if not exists(virtualenv_folder + '/bin/pip'):
         run('virtualenv --python=python2.7 %s' % (virtualenv_folder,))
     run('%s/bin/pip install -r %s/config/requirements/production.txt' % (
@@ -69,19 +74,25 @@ def _update_static_files(backend_source_folder):
 
 def _update_database(backend_source_folder):
     run('mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -p%s -u root mysql' % (
-        mysql_command,
+        MYSQL_PW,
     ))
 
-    mysql_command = 'mysql -p%s -u root -e' % (MYSQL_PW,))
-    run('%s "drop user \'\'@\'localhost\';"' % (mysql_command,))
-    run('%s "drop user \'\'@\'hostname\';"' % (mysql_command,))
-    run('%s "drop database test;"' % (mysql_command,))
-    run('%s "create databse rvi character set utf8;"' % (mysql_command,))
-    run('%s "create user \'rvi_user\'@\'localhost\' identified by \'rvi\';"' % (
-        mysql_command,
-    ))
-    run('%s "grant all on rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
-    run('%s "grant all on test_rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
+    mysql_command = 'mysql -p%s -u root -e' % (MYSQL_PW,)
+    run(('%s "select user, host, password from mysql.user;'
+         'update mysql.user set password = PASSWORD(\'%s\') where user = \'root\';'
+         'flush privileges;"' % (mysql_command, MYSQL_PW)
+     ))
+
+    with warn_only():
+        run('%s "drop user \'\'@\'localhost\';"' % (mysql_command,))
+        run('%s "drop user \'\'@\'hostname\';"' % (mysql_command,))
+        run('%s "drop database test;"' % (mysql_command,))
+        run('%s "create database rvi character set utf8;"' % (mysql_command,))
+        run('%s "create user \'rvi_user\'@\'localhost\' identified by \'rvi\';"' % (
+            mysql_command,
+        ))
+        run('%s "grant all on rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
+        run('%s "grant all on test_rvi.* to \'rvi_user\'@\'localhost\';"' % (mysql_command,))
 
     run('cd %s/web && ../../virtualenv/bin/python2.7 manage.py migrate --noinput' % (
         backend_source_folder,
