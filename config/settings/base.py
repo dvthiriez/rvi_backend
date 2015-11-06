@@ -85,6 +85,9 @@ INSTALLED_APPS = (
     'can_fw',
     'servicehistory',
     'tokenapi',
+    'rest_framework',
+    'provider',
+    'provider.oauth2',
 )
 
 # INSTALLED_APPS = ('django_cassandra_engine',) + INSTALLED_APPS
@@ -106,6 +109,16 @@ WSGI_APPLICATION = 'rvi.wsgi.application'
 
 AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', 'tokenapi.backends.TokenBackend', )
 LOGIN_URL = '/login/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':
+    ('rest_framework.authentication.OAuth2Authentication',
+     'rest_framework.authentication.SessionAuthentication'),
+    'DEFAULT_MODEL_SERIALIZER_CLASS':
+    'rest_framework.serializers.ModelSerializer',
+    'DEFAULT_PERMISSION_CLASSES':
+    ('rest_framework.permissions.IsAdminUser',)
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases

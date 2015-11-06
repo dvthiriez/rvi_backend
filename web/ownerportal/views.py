@@ -12,8 +12,47 @@ from django.utils.timezone import localtime
 from pytz import timezone
 import datetime
 
+from django.views.decorators.csrf import csrf_exempt
+
+# REST Framework
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
+# Provider OAUTH2
+from provider.oauth2.models import Client
+
+from django.contrib.auth.models import User
+from ownerportal.serializers import RegistrationSerializer
 from devices.models import Device, Remote
 from vehicles.models import Vehicle
+
+
+class RegistrationView(APIView):
+    """ Allow registration of new users. """
+    permission_classes = ()
+
+    @csrf_exempt
+    def post(self, request):
+        serializer = RegistrationSerializer(data=request.data)
+
+        # Chech format and unique constraint
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = serializer.data
+
+        u = User.objects.create(username=data['username'])
+        u.set_password(data['password'])
+        u.save()
+
+        # Create Oauth2 client
+        name = u.username
+        client = Client(user=u, name=name, url='' + name,
+                        client_id=name, client_secret='', client_type=1)
+        client.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 def login_user(request):

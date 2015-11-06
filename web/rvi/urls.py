@@ -12,6 +12,9 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
+from ownerportal import views
+
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -20,6 +23,12 @@ urlpatterns = patterns('',
     # url(r'^blog/', include('blog.urls')),
 
     (r'', include('tokenapi.urls')),
+    # Registration of new users
+    url(r'^registeruser/$', views.RegistrationView.as_view()),
+
+    # API authentication
+    url(r'^oauth2/', include('provider.oauth2.urls', namespace='oauth2')),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     url(r'^tracking/', include('tracking.urls')),
     url(r'^sota/', include('sota.urls')),
