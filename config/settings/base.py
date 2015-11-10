@@ -86,8 +86,7 @@ INSTALLED_APPS = (
     'servicehistory',
     'tokenapi',
     'rest_framework',
-    'provider',
-    'provider.oauth2',
+    #'oauth2_provider',
 )
 
 # INSTALLED_APPS = ('django_cassandra_engine',) + INSTALLED_APPS
@@ -112,10 +111,12 @@ LOGIN_URL = '/login/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES':
-    ('rest_framework.authentication.OAuth2Authentication',
-     'rest_framework.authentication.SessionAuthentication'),
+        ('rest_framework.authentication.OAuth2Authentication',
+         'rest_framework.authentication.SessionAuthentication'),
+
     'DEFAULT_MODEL_SERIALIZER_CLASS':
-    'rest_framework.serializers.ModelSerializer',
+        'rest_framework.serializers.ModelSerializer',
+
     'DEFAULT_PERMISSION_CLASSES':
     ('rest_framework.permissions.IsAdminUser',)
 }

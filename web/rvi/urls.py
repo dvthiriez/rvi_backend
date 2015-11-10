@@ -27,7 +27,7 @@ urlpatterns = patterns('',
     url(r'^registeruser/$', views.RegistrationView.as_view()),
 
     # API authentication
-    url(r'^oauth2/', include('provider.oauth2.urls', namespace='oauth2')),
+    # url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     url(r'^tracking/', include('tracking.urls')),
