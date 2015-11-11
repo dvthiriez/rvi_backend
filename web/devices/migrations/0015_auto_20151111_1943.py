@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='remote',
             name='rem_uuid',
-            field=models.CharField(default=b'b41c5c62-a5f4-412a-9c08-4b74578b41de', verbose_name=b'Remote UUID', unique=True, max_length=60, editable=False),
+            field=models.CharField(verbose_name=b'Remote UUID', unique=True, max_length=60, editable=False),
             preserve_default=True,
         ),
     ]
