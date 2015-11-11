@@ -1,7 +1,7 @@
 from unittest import skip
 from .base import FunctionalTest
 from common.util.rvi_setup import RVIModelSetup
-from common.util.rvi_invoke import RVICalls
+from common.util.rvi_invoke import RVIBackendCalls
 from server.rviserver import RVIServer
 
 
@@ -39,13 +39,20 @@ class WebPortalTest(FunctionalTest):
 
 class RviTest(FunctionalTest):
     
-    def test_data_setup(self):
+    def setUp(self):
         # TODO test is currently failing, RVIServer instance is not launching
         # Need to figure out how to instantiate RVIServer s.t. test database is used
-        # pid_file= '/var/run/rviserver.pid'
-        # rvi_server = RVIServer(pid_file)
-        # rvi_server.start()
+        # pid_file = '/var/run/rviserver.pid'
+        # self.rvi_server = RVIServer(pid_file)
+        # self.rvi_server.start()
+        self.fail('Need to figure out how to instantiate RVIServer s.t. test database is used')
+        # pass
 
+    def tearDown(self):
+        # self.rvi_server.stop()
+        pass
+
+    def test_data_setup(self):
         rvi_model = RVIModelSetup()
         owner = rvi_model.setup_user(username='dthiriez')
         owner_key = rvi_model.setup_key(owner)
@@ -56,9 +63,8 @@ class RviTest(FunctionalTest):
         guest_device = rvi_model.setup_device(guest, guest_key)
         guest_remote = rvi_model.setup_remote(guest, guest_device, vehicle)
 
-        rvi_call = RVICalls()
+        rvi_call = RVIBackendCalls()
         rvi_call.cert_create(guest, vehicle)
-        # rvi_server.stop()
 
     def test_can_send_remote(self):
         # David proceeds to set up an account, security key, device, and 
