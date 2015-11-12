@@ -1,7 +1,13 @@
+from django.db import transaction
+
 from rest_framework import serializers
-from django.contrib.auth.models import User
 from common.util.rvi_setup import RVIModelSetup
-from devices.models import Device
+
+from devices.tasks import send_remote
+
+from django.contrib.auth.models import User
+from devices.models import Device, Remote
+from vehicles.models import Vehicle
 
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -12,23 +18,32 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+
     device = DeviceSerializer()
+
     class Meta:
         model = User
         fields = ('username', 'password', 'email', 'first_name', 'last_name', 'device')
         depth = 2
 
     def create(self, validated_data):
-        rvi_model = RVIModelSetup()
         device_data = validated_data.pop('device')[0]
-
-        user = rvi_model.setup_user(**validated_data)
-        user_key = rvi_model.setup_key(user)
-
         mdn = device_data['dev_mdn']
         uuid = device_data['dev_uuid']
-        device = rvi_model.setup_device(user, user_key, mdn, uuid)
 
+        # TODO raise integrity errors back to serializer response
+        rvi_model = RVIModelSetup()
+        with transaction.atomic():
+            user = rvi_model.setup_user(**validated_data)
+            user_key = rvi_model.setup_key(user)
+            device = rvi_model.setup_device(user, user_key, mdn, uuid)
+            remote = rvi_model.setup_remote(user, device, Vehicle.objects.first())
+
+        # TODO potentially seperate send_remote task from task
+        for vehicle in Vehicle.objects.all():
+            for owner_device in Device.objects.filter(account=vehicle.account):
+                for owner_remote in Remote.objects.filter(rem_device=owner_device):
+                    send_remote(owner_remote)
         return user
 
     def restore_object(self, attrs, instance=None):
