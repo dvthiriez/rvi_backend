@@ -109,3 +109,6 @@ class Remote(models.Model):
     def _get_time_epoch(self, dt):
         return int((dt.astimezone(pytz.UTC) - datetime.datetime(1970,1,1,tzinfo=pytz.UTC)).total_seconds())
 
+    def save(self, *args, **kwargs):
+        self.rem_uuid = str(uuid.uuid4())
+        super(Remote, self).save(*args, **kwargs)
