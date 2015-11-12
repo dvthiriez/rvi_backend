@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from common.util.rvi_setup import RVIModelSetup
 from devices.models import Device
 
 
 class DeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Device
-        fields = ('dev_uuid', 'dev_mdn')
+        fields = ('dev_mdn', 'dev_uuid')
         depth = 1
 
 
@@ -18,16 +19,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
         depth = 2
 
     def create(self, validated_data):
+        rvi_model = RVIModelSetup()
         device_data = validated_data.pop('device')[0]
-        password = validated_data.pop('password')
-        user = User.objects.create(**validated_data)
-        user.set_password(password)
-        device_data['account'] = user
-        device_data['dev_name'] = 'device_'+user.username
-        device_data['dev_owner'] = user.username
-        device = Device.objects.create(**device_data)
-        device.save()
-        user.save()
+
+        user = rvi_model.setup_user(**validated_data)
+        user_key = rvi_model.setup_key(user)
+
+        mdn = device_data['dev_mdn']
+        uuid = device_data['dev_uuid']
+        device = rvi_model.setup_device(user, user_key, mdn, uuid)
+
         return user
 
     def restore_object(self, attrs, instance=None):
