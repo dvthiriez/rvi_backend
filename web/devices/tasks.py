@@ -111,7 +111,66 @@ def send_remote(remote):
     Following successful send of cert_provision, cert_accountdetails is sent down to the same device (see below).
     Mobile app then parses this payload to render its UI.
     '''
-    time.sleep(2)
+    send_account_details(remote)
+
+
+def send_account_details(remote):
+
+    logger.info('%s: Sending Remote.', remote)
+
+    global transaction_id
+
+    # get settings
+    # service edge url
+    try:
+        rvi_service_url = settings.RVI_SERVICE_EDGE_URL
+    except NameError:
+        logger.error('%s: RVI_SERVICE_EDGE_URL not defined. Check settings!', remote)
+        return False
+
+    # DM service id
+    try:
+        rvi_service_id = settings.RVI_DM_SERVICE_ID
+    except NameError:
+        rvi_service_id = '/dm'
+
+    # Signature algorithm
+    try:
+        alg = settings.RVI_BACKEND_ALG_SIG
+    except NameError:
+        alg = 'RS256'
+
+    # Server Key
+    try:
+        keyfile = open(settings.RVI_BACKEND_KEYFILE, 'r')
+        key = keyfile.read()
+    except Exception as e:
+        logger.error('%s: Cannot read server key: %s', remote, e)
+        return False
+
+    # Create and sign certificate
+    try:
+        cert = remote.encode_jwt(key, alg)
+    except Exception as e:
+        logger.error('%s: Cannot create and sign certificate: %s', remote, e)
+        return False
+
+    # establish outgoing RVI service edge connection
+    rvi_server = None
+    logger.info('%s: Establishing RVI service edge connection: %s', remote, rvi_service_url)
+    try:
+        rvi_server = jsonrpclib.Server(rvi_service_url)
+    except Exception as e:
+        logger.error('%s: Cannot connect to RVI service edge: %s', remote, e)
+        return False
+    logger.info('%s: Established connection to RVI Service Edge: %s', remote, rvi_server)
+
+    # get destination info
+    mobile = remote.rem_device
+    dst_url = mobile.get_rvi_id()
+
+    # notify remote of pending file transfer
+    transaction_id += 1
 
     # get user info
     user = User.objects.get(id=mobile.account_id)
