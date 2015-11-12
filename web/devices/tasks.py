@@ -112,11 +112,12 @@ def send_remote(remote):
     Mobile app then parses this payload to render its UI.
     '''
     send_account_details(remote)
+    return True
 
 
 def send_account_details(remote):
 
-    logger.info('%s: Sending Remote.', remote)
+    logger.info('%s: Sending Account Details.', remote)
 
     global transaction_id
 
@@ -173,7 +174,7 @@ def send_account_details(remote):
     transaction_id += 1
 
     # get user info
-    user = User.objects.get(id=mobile.account_id)
+    user = mobile.account
     vehicle = remote.rem_vehicle
     owner_username = vehicle.list_account()
 
@@ -197,37 +198,40 @@ def send_account_details(remote):
         user_type = u'guest'
     '''
 
+    parameters = [{
+        u'username': user.username,
+        u'userType': user_type,
+        u'vehicleName': vehicle.veh_name,
+        u'vehicleVIN': vehicle.veh_vin,
+        u'validFrom': valid_from,
+        u'validTo': valid_to,
+        u'authorizedServices': {
+            u'lock': unicode(remote.rem_lock),
+            u'engine': unicode(remote.rem_engine),
+            u'trunk': unicode(remote.rem_trunk),
+            u'windows': unicode(remote.rem_windows),
+            u'lights': unicode(remote.rem_lights),
+            u'hazard': unicode(remote.rem_hazard),
+            u'horn': unicode(remote.rem_horn)
+        },
+        # TODO implement how guests are tied to a vehicle
+        # Presently, all users other than the owner are retrieved
+        u'guests': guests_dict
+    },]
+
+
     try:
         rvi_server.message(calling_service = rvi_service_id,
                        service_name = dst_url + rvi_service_id + '/cert_accountdetails',
                        transaction_id = str(transaction_id),
                        timeout = int(time.time()) + 5000,
-                       parameters = [{
-                                        u'username': user.username,
-                                        u'userType': user_type,
-                                        u'vehicleName': vehicle.veh_name,
-                                        u'vehicleVIN': vehicle.veh_vin,
-                                        u'validFrom': valid_from,
-                                        u'validTo': valid_to,
-                                        u'authorizedServices': {
-                                            u'lock': unicode(remote.rem_lock),
-                                            u'engine': unicode(remote.rem_engine),
-                                            u'trunk': unicode(remote.rem_trunk),
-                                            u'windows': unicode(remote.rem_windows),
-                                            u'lights': unicode(remote.rem_lights),
-                                            u'hazard': unicode(remote.rem_hazard),
-                                            u'horn': unicode(remote.rem_horn)
-                                        },
-                                        # TODO implement how guests are tied to a vehicle
-                                        # Presently, all users other than the owner are retrieved
-                                        u'guests': guests_dict
-                                     },
-                                    ])
+                       parameters = parameters
+        )
     except Exception as e:
         logger.error('%s: Cannot connect to RVI service edge: %s', remote, e)
         return False
     logger.info('%s: Sent Account Details.', user.username)
-    return True
+    return parameters
 
 
 def send_all_requested_remotes(vehicleVIN, deviceUUID):

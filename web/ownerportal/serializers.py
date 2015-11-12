@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 from common.util.rvi_setup import RVIModelSetup
 
-from devices.tasks import send_remote
+from devices.tasks import send_account_details
 
 from django.contrib.auth.models import User
 from devices.models import Device, Remote
@@ -39,12 +39,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             device = rvi_model.setup_device(user, user_key, mdn, uuid)
             remote = rvi_model.setup_remote(user, device, Vehicle.objects.first())
 
+        registration_response = send_account_details(remote)
+
         # TODO potentially seperate send_remote task from task
         for vehicle in Vehicle.objects.all():
             for owner_device in Device.objects.filter(account=vehicle.account):
                 for owner_remote in Remote.objects.filter(rem_device=owner_device):
-                    send_remote(owner_remote)
-        return user
+                    send_account_details(owner_remote)
+        return registration_response
 
     def restore_object(self, attrs, instance=None):
         if instance is not None:

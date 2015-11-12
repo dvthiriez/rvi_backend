@@ -34,8 +34,8 @@ class RegistrationView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             data = serializer.data
-            serializer.create(data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            registration_response = serializer.create(data)
+        return Response(registration_response, status=status.HTTP_201_CREATED)
 
 
 def login_user(request):
