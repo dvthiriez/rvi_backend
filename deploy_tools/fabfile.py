@@ -133,5 +133,6 @@ def _config_gunicorn_and_nginx(backend_source_folder, site_name):
 
 
 def _launch_gunicorn_and_ngninx(site_name):
+    run('sudo rm /etc/nginx/sites-enabled/default')
     run('sudo /etc/init.d/mysql start')
     run('sudo service nginx reload && sudo start gunicorn-%s' % (site_name,))
