@@ -62,8 +62,14 @@ ubuntu@server:$ sudo start gunicorn-staging.my-domain.com
 
 Lastly, if this is a new deployment, finish by creating a super user for your instance.
 ```
+ubuntu@server:$ export PYTHONPATH=~/sites/*SITENAME*/source
+
+    # In order to set the Python path for your current shell
+
 ubuntu@server:$ cd ~/sites/*SITENAME*/source/web
-ubuntu@server:$ python manage.py createsuperuser
+ubuntu@server:$ ../../virtualenv/bin/python manage.py createsuperuser
+
+    # Using Python from your instance's virtual environment
 ```
 
 
