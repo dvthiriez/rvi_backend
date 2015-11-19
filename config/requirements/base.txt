@@ -34,4 +34,4 @@ django-tokenapi==0.2.3
 
 # registration functionality for mobile app
 django-oauth2-provider==0.2.6.1
-djangorestframework==3.3.1
+djangorestframework==2.3.13
