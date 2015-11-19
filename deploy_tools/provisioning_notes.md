@@ -17,35 +17,55 @@ Provisioning a new site
 
 eg, on Ubuntu:
 
-    sudo apt-get update
-    sudo apt-get install build-essential python-pip python-dev mysql-server python-mysqldb
+```
+ubuntu@server:$ sudo apt-get update
+ubuntu@server:$ sudo apt-get install build-essential python-pip python-dev mysql-server python-mysqldb
 
     # You may be prompted to set the mysql root password at this point. If so, use 'newpwd'
     # However, if you'd like to set it to something else, just update your local machine's 
     # fabfile.py if you plan on using Fabric for remote deployment
 
-    sudo apt-get install libffi-dev libssl-dev libmysqlclient-dev nginx erlang git
-    sudo update-rc.d mysql defaults
-    sudo pip install virtualenv
-
+ubuntu@server:$ sudo apt-get install libffi-dev libssl-dev libmysqlclient-dev nginx erlang git
+ubuntu@server:$ sudo update-rc.d mysql defaults
+ubuntu@server:$ sudo pip install virtualenv
+```
 
 ## Usage and setup of automated deployment using Fabric:
-Proceed with the steps above to set up all packages required on your server.
+If a new deployment, proceed with the steps above to set up all packages required on your server.
 
-Then, to use the fabfile.py to perform a remote deployment, execute the following commands on your local machine,
-replacing *staging.my-domain.com* with the server you're provisioning.
+Then, use Fabric and the included fabfile.py to perform a remote deployment by executing the following 
+commands on your local machine (replacing *staging.my-domain.com* with the server you're provisioning)
 ```
 $ cd rvi_backend/deploy_tools
 $ pip2 install fabric
 $ fab deploy:host=ubuntu@staging.my-domain.com
 ```
 
-**Note:** If access to your server is via private key, you'll have to add the key on your local maching. e.g.
+**Note:** If access to your server is via private key, you'll have to first add the key to your local 
+machine. e.g.
 ```
 $ eval `ssh-agent -s`
 $ ssh-add ~/.ssh/ec2key.pem
 $ fab deploy:host=ubuntu@staging.my-domain.com
 ```
+
+
+Next, connect to your instance over SSH once the Fabric is complete
+and restart your Nginx and Gunicorn services.
+
+```
+ubuntu@server:$ sudo service nginx reload
+ubuntu@server:$ sudo stop gunicorn-staging.my-domain.com
+ubuntu@server:$ sudo start gunicorn-staging.my-domain.com
+```
+
+
+Lastly, if this is a new deployment, finish by creating a super user for your instance.
+```
+ubuntu@server:$ cd ~/sites/*SITENAME*/source/web
+ubuntu@server:$ python manage.py createsuperuser
+```
+
 
 For additional details or a full walkthrough, refer to chapters 8 and 9 in Test-Driven Development with Python,
 by Harry J.W. Percival available @ http://www.obeythetestinggoat.com
