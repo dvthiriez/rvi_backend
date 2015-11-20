@@ -46,7 +46,7 @@ class DeviceAdmin(admin.ModelAdmin):
     """
     fieldsets = [
         (None,                   {'fields': ['dev_name']}),
-        ('Owner Information',    {'fields': ['dev_owner', 'dev_mdn']}),
+        ('Owner Information',    {'fields': ['dev_owner', 'dev_mdn', 'account']}),
         ('Device Information',   {'fields': ['dev_uuid', 'dev_min', 'dev_imei', 'dev_wifimac', 'dev_btmac']}),
         ('RVI Information',      {'fields': ['dev_rvibasename']}),
         ('Security Information', {'fields': ['dev_key']}),
@@ -55,7 +55,7 @@ class DeviceAdmin(admin.ModelAdmin):
     inlines = [RemoteInline]
     
     def save_model(self, request, obj, form, change):
-        obj.account = request.user
+        #obj.account = request.user
         obj.save()
 
 

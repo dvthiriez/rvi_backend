@@ -3,7 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 from common.util.rvi_setup import RVIModelSetup
 
-from devices.tasks import send_account_details
+from devices.tasks import send_remote
 
 from django.contrib.auth.models import User
 from devices.models import Device, Remote
@@ -30,22 +30,35 @@ class RegistrationSerializer(serializers.ModelSerializer):
         device_data = validated_data.pop('device')[0]
         mdn = device_data['dev_mdn']
         uuid = device_data['dev_uuid']
-
         # TODO raise integrity errors back to serializer response
         rvi_model = RVIModelSetup()
         with transaction.atomic():
             user = rvi_model.setup_user(**validated_data)
             user_key = rvi_model.setup_key(user)
             device = rvi_model.setup_device(user, user_key, mdn, uuid)
-            remote = rvi_model.setup_remote(user, device, Vehicle.objects.first())
-
-        registration_response = send_account_details(remote)
-
+            # remote = rvi_model.setup_remote(user, device, Vehicle.objects.first())
+        # registration_response = send_account_details(remote)
+        registration_response = {
+            u'username': user.username,
+            u'userType': u'guest',
+            u'vehicleName': u'unavailable',
+            u'validTo': u'2004-09-16T00:00:00Z',
+            u'authorizedServices': {
+                u'lock': unicode(False),
+                u'engine': unicode(False),
+                u'trunk': unicode(False),
+                u'windows': unicode(False),
+                u'lights': unicode(False),
+                u'hazard': unicode(False),
+                u'horn': unicode(False)
+            },
+            u'guests':u'',
+        }
         # TODO potentially seperate send_remote task from task
         for vehicle in Vehicle.objects.all():
             for owner_device in Device.objects.filter(account=vehicle.account):
                 for owner_remote in Remote.objects.filter(rem_device=owner_device):
-                    send_account_details(owner_remote)
+                    send_remote(owner_remote)
         return registration_response
 
     def restore_object(self, attrs, instance=None):
