@@ -26,6 +26,9 @@ urlpatterns = patterns('',
     # Registration of new users
     url(r'^registeruser/$', views.RegistrationView.as_view()),
 
+    # Check if device exists for user, add if not
+    url(r'^checkdevice/$', views.AddDeviceView.as_view()),
+
     # API authentication
     # url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),

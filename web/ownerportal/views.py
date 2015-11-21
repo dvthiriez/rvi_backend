@@ -17,7 +17,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from django.contrib.auth.models import User
-from ownerportal.serializers import RegistrationSerializer
+from ownerportal.serializers import RegistrationSerializer, AddDeviceSerializer
 from devices.models import Device, Remote
 from vehicles.models import Vehicle
 
@@ -36,6 +36,20 @@ class RegistrationView(APIView):
             data = serializer.data
             registration_response = serializer.create(data)
         return Response(registration_response, status=status.HTTP_201_CREATED)
+
+
+class AddDeviceView(APIView):
+    """ Allow existing users to add a device """
+    permission_classes = ()
+
+    @csrf_exempt
+    def post(self, request):
+        serializer = AddDeviceSerializer(data=request.DATA)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            data = serializer.data
+            return Response(serializer.create(data), status=status.HTTP_201_CREATED)
 
 
 def login_user(request):

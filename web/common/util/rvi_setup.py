@@ -69,7 +69,7 @@ class RVIModelSetup():
         )
 
         key = JSONWebKey.objects.create(
-            key_name='key_' + user.username,
+            key_name='key_' + user.username + "_" + self.__uuid_gen(),
             key_valid_from=valid_from,
             key_valid_to=valid_to,
             key_pem=pem
@@ -113,7 +113,7 @@ class RVIModelSetup():
         mdn = mdn or self.__number_gen()
         uuid = uuid or self.__uuid_gen()
         device = Device.objects.create(
-            dev_name='device_' + user.username + '_' + uuid[:8],
+            dev_name='device_' + user.username + '_' + uuid,
             dev_owner=user.username,
             dev_mdn=mdn,
             dev_uuid=uuid,

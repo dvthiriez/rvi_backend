@@ -6,6 +6,7 @@ from common.util.rvi_setup import RVIModelSetup
 from devices.tasks import send_remote
 
 from django.contrib.auth.models import User
+from security.models import JSONWebKey
 from devices.models import Device, Remote
 from vehicles.models import Vehicle
 
@@ -68,6 +69,56 @@ class RegistrationSerializer(serializers.ModelSerializer):
             instance.email = attrs.get('email', instance.email)
             instance.first_name = attrs.get('first_name', instance.first_name)
             instance.last_name = attrs.get('last_name', instance.last_name)
+            return instance
+
+        device = attrs.get('device')
+        del attrs['device']
+
+        user = User(**attrs)
+        user.device = device
+
+        return user
+
+class AddDeviceSerializer(serializers.Serializer):
+
+    device = DeviceSerializer()
+    username = serializers.CharField(max_length=200)
+
+
+    class Meta:
+        #model = User
+        fields = ('device', 'username')
+        #read_only_fields = ('username',)
+        depth = 2
+
+    def check_for_existing_device(self, validated_data):
+        device_data = validated_data['device'][0]
+        uuid = device_data['dev_uuid']
+        user = User.objects.get(username=validated_data['username'])
+        matching_devices = Device.objects.filter(account=user, dev_uuid=uuid)
+        if matching_devices.exists():
+            return True
+        else:
+            return False
+
+    def create(self, validated_data):
+        device_exists = self.check_for_existing_device(validated_data)
+        if not device_exists:
+            device_data = validated_data['device'][0]
+            mdn = device_data['dev_mdn']
+            uuid = device_data['dev_uuid']
+
+            user = User.objects.get(username=validated_data['username'])
+            rvi_model = RVIModelSetup()
+            user_key = rvi_model.setup_key(user)
+            device = rvi_model.setup_device(user, user_key, mdn, uuid)
+
+        add_device_response = {u'deviceAdded': unicode(not device_exists),}
+        return add_device_response
+
+    def restore_object(self, attrs, instance=None):
+        if instance is not None:
+            instance.username = attrs.get('username', instance.username)
             return instance
 
         device = attrs.get('device')
